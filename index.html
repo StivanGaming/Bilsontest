@@ -127,33 +127,4 @@
   document.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 </script>
 </body>
-</html>      startCycle();
-    } else {
-      audio.load();
-    }
-
-    // repeat every time audio ends
-    audio.addEventListener('ended', startCycle);
-  }
-
-  // kill switch: G + U + I
-  const keys = new Set();
-  document.addEventListener('keydown', e => {
-    keys.add(e.key.toLowerCase());
-    if (keys.has('g') && keys.has('u') && keys.has('i')) {
-      audio.pause();
-      audio.removeEventListener('ended', startCycle);
-      backdrop.style.transition = 'opacity 0.4s';
-      bilson.style.transition   = 'opacity 0.4s';
-      backdrop.style.opacity    = '0';
-      bilson.style.opacity      = '0';
-      setTimeout(() => {
-        backdrop.style.display = 'none';
-        bilson.style.display   = 'none';
-      }, 500);
-    }
-  });
-  document.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-</script>
-</body>
-</html>
+</html>      

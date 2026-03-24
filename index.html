@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>.</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #start-btn {
+      color: #222;
+      background: none;
+      border: 1px solid #222;
+      padding: 10px 20px;
+      font-family: monospace;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    /* black fullscreen backdrop — same flash/fade as bilson */
+    #backdrop {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #000;
+      display: none;
+      opacity: 1;
+      z-index: 9998;
+    }
+
+    /* bilson centered on top */
+    #bilson {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      opacity: 1;
+      z-index: 9999;
+      max-width: 100vw;
+      max-height: 100vh;
+    }
+
+    #bilson img {
+      width: 498px;
+      max-width: 100vw;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+<button id="start-btn" onclick="activate()">click</button>
+<div id="backdrop"></div>
+<div id="bilson"><img src="bilson.png"></div>
+<audio id="radar" src="Radar.mp3"></audio>
+
+<script>
+  const btn      = document.getElementById('start-btn');
+  const bilson   = document.getElementById('bilson');
+  const backdrop = document.getElementById('backdrop');
+  const audio    = document.getElementById('radar');
+
+  function activate() {
+    btn.style.display = 'none';
+
+    // snap both on instantly, no transition
+    backdrop.style.transition = 'none';
+    bilson.style.transition   = 'none';
+    backdrop.style.opacity    = '1';
+    bilson.style.opacity      = '1';
+    backdrop.style.display    = 'block';
+    bilson.style.display      = 'block';
+
+    audio.play();
+
+    // when audio ends, fade both out together
+    audio.addEventListener('ended', fadeOut);
+  }
+
+  function fadeOut() {
+    const FADE = 'opacity 2s ease-out';
+    backdrop.style.transition = FADE;
+    bilson.style.transition   = FADE;
+    backdrop.style.opacity    = '0';
+    bilson.style.opacity      = '0';
+    setTimeout(() => {
+      backdrop.style.display = 'none';
+      bilson.style.display   = 'none';
+    }, 2100);
+  }
+
+  // kill switch: G + U + I at the same time
+  const keys = new Set();
+  document.addEventListener('keydown', e => {
+    keys.add(e.key.toLowerCase());
+    if (keys.has('g') && keys.has('u') && keys.has('i')) {
+      audio.pause();
+      audio.removeEventListener('ended', fadeOut);
+      backdrop.style.transition = 'opacity 0.4s';
+      bilson.style.transition   = 'opacity 0.4s';
+      backdrop.style.opacity    = '0';
+      bilson.style.opacity      = '0';
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        bilson.style.display   = 'none';
+      }, 500);
+    }
+  });
+  document.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+</script>
+</body>
+</html>

@@ -55,7 +55,7 @@
 
 <button id="start-btn" onclick="activate()">click</button>
 <div id="backdrop"></div>
-<div id="bilson"><img src="bilson.png"></div>
+<div id="bilson"><img src="Bilson.png"></div>
 <audio id="radar" src="Radar.mp3"></audio>
 
 <script>
@@ -79,7 +79,7 @@
     // wait one frame so the snap registers, then begin slow fade
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const duration = audio.duration || 5; // seconds
+        const duration = audio.duration || 5;
         const fade = `opacity ${duration}s linear`;
         backdrop.style.transition = fade;
         bilson.style.transition   = fade;
@@ -92,14 +92,42 @@
   function activate() {
     btn.style.display = 'none';
 
-    // need duration, so load first
     audio.addEventListener('loadedmetadata', () => {
       startCycle();
     }, { once: true });
 
-    // if already loaded
     if (audio.readyState >= 1) {
       startCycle();
+    } else {
+      audio.load();
+    }
+
+    // repeat after a short delay when audio ends
+    audio.addEventListener('ended', () => {
+      setTimeout(startCycle, 1500);
+    });
+  }
+
+  // kill switch: G + U + I
+  const keys = new Set();
+  document.addEventListener('keydown', e => {
+    keys.add(e.key.toLowerCase());
+    if (keys.has('g') && keys.has('u') && keys.has('i')) {
+      audio.pause();
+      backdrop.style.transition = 'opacity 0.4s';
+      bilson.style.transition   = 'opacity 0.4s';
+      backdrop.style.opacity    = '0';
+      bilson.style.opacity      = '0';
+      setTimeout(() => {
+        backdrop.style.display = 'none';
+        bilson.style.display   = 'none';
+      }, 500);
+    }
+  });
+  document.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+</script>
+</body>
+</html>      startCycle();
     } else {
       audio.load();
     }

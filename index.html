@@ -24,7 +24,6 @@
       font-size: 13px;
     }
 
-    /* black fullscreen backdrop — same flash/fade as bilson */
     #backdrop {
       position: fixed;
       top: 0; left: 0;
@@ -35,7 +34,6 @@
       z-index: 9998;
     }
 
-    /* bilson centered on top */
     #bilson {
       position: fixed;
       top: 50%;
@@ -44,8 +42,6 @@
       display: none;
       opacity: 1;
       z-index: 9999;
-      max-width: 100vw;
-      max-height: 100vh;
     }
 
     #bilson img {
@@ -68,10 +64,8 @@
   const backdrop = document.getElementById('backdrop');
   const audio    = document.getElementById('radar');
 
-  function activate() {
-    btn.style.display = 'none';
-
-    // snap both on instantly, no transition
+  function startCycle() {
+    // snap on instantly
     backdrop.style.transition = 'none';
     bilson.style.transition   = 'none';
     backdrop.style.opacity    = '1';
@@ -79,31 +73,48 @@
     backdrop.style.display    = 'block';
     bilson.style.display      = 'block';
 
+    audio.currentTime = 0;
     audio.play();
 
-    // when audio ends, fade both out together
-    audio.addEventListener('ended', fadeOut);
+    // wait one frame so the snap registers, then begin slow fade
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const duration = audio.duration || 5; // seconds
+        const fade = `opacity ${duration}s linear`;
+        backdrop.style.transition = fade;
+        bilson.style.transition   = fade;
+        backdrop.style.opacity    = '0';
+        bilson.style.opacity      = '0';
+      });
+    });
   }
 
-  function fadeOut() {
-    const FADE = 'opacity 2s ease-out';
-    backdrop.style.transition = FADE;
-    bilson.style.transition   = FADE;
-    backdrop.style.opacity    = '0';
-    bilson.style.opacity      = '0';
-    setTimeout(() => {
-      backdrop.style.display = 'none';
-      bilson.style.display   = 'none';
-    }, 2100);
+  function activate() {
+    btn.style.display = 'none';
+
+    // need duration, so load first
+    audio.addEventListener('loadedmetadata', () => {
+      startCycle();
+    }, { once: true });
+
+    // if already loaded
+    if (audio.readyState >= 1) {
+      startCycle();
+    } else {
+      audio.load();
+    }
+
+    // repeat every time audio ends
+    audio.addEventListener('ended', startCycle);
   }
 
-  // kill switch: G + U + I at the same time
+  // kill switch: G + U + I
   const keys = new Set();
   document.addEventListener('keydown', e => {
     keys.add(e.key.toLowerCase());
     if (keys.has('g') && keys.has('u') && keys.has('i')) {
       audio.pause();
-      audio.removeEventListener('ended', fadeOut);
+      audio.removeEventListener('ended', startCycle);
       backdrop.style.transition = 'opacity 0.4s';
       bilson.style.transition   = 'opacity 0.4s';
       backdrop.style.opacity    = '0';
